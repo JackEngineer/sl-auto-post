@@ -2,18 +2,24 @@ import telebot
 from telebot import types, apihelper
 import uuid
 import re
+import logging
+import time
 from datetime import datetime
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
+# 设置日志记录
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Set up requests session with retries
 session = requests.Session()
 retry = Retry(
     total=5,
     backoff_factor=0.1,
-    status_forcelist=[502, 503, 504]
+    status_forcelist=[502, 503, 504, 500, 403, 404, 429]
 )
 adapter = HTTPAdapter(max_retries=retry)
 session.mount('http://', adapter)
@@ -53,6 +59,7 @@ SUBMISSION_TEMPLATE = """
 雷区：
 在线时间：
 想找的人：
+联系方式：
 """
 
 # 正则表达式匹配投稿格式
@@ -67,7 +74,8 @@ SUBMISSION_PATTERN = (
     r'性癖：.*\n'
     r'雷区：.*\n'
     r'在线时间：.*\n'
-    r'想找的人：.*$'
+    r'想找的人：.*\n'
+    r'联系方式：.*$'
 )
 
 WELCOME_TEXT = """
@@ -183,8 +191,12 @@ def echo_all(message):
 #     bot.reply_to(message, f"Your chat ID is {chat_id}")
 
 
-try:
-    # 启动机器人
-    bot.polling(none_stop=True, interval=0, timeout=20)
-except Exception as e:
-    print(f"Error: {e}")
+while True:
+    try:
+        bot.polling(none_stop=True, interval=0, timeout=20)
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection Error: {e}")
+        time.sleep(15)  # 等待15秒后重试
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        time.sleep(15)  # 等待15秒后重试
