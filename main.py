@@ -1,8 +1,24 @@
 import telebot
-from telebot import types
+from telebot import types, apihelper
 import uuid
 import re
 from datetime import datetime
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+
+# Set up requests session with retries
+session = requests.Session()
+retry = Retry(
+    total=5,
+    backoff_factor=0.1,
+    status_forcelist=[502, 503, 504]
+)
+adapter = HTTPAdapter(max_retries=retry)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+apihelper.session = session
 
 API_TOKEN = '6807658453:AAERfsvptE1CZjcGD153Mi3fF2S4PLJd5tM'
 # 频道用户名
@@ -167,5 +183,8 @@ def echo_all(message):
 #     bot.reply_to(message, f"Your chat ID is {chat_id}")
 
 
-# 启动机器人
-bot.polling()
+try:
+    # 启动机器人
+    bot.polling(none_stop=True, interval=0, timeout=20)
+except Exception as e:
+    print(f"Error: {e}")
