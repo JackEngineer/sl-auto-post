@@ -1,41 +1,26 @@
+from dotenv import load_dotenv
+import os
 import telebot
-from telebot import types, apihelper
+from telebot import types
+from flask import Flask, request
 import uuid
 import re
 import logging
-import time
 from datetime import datetime
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
+# 加载 .env 文件
+load_dotenv()
 
-# 设置日志记录
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Set up requests session with retries
-session = requests.Session()
-retry = Retry(
-    total=5,
-    backoff_factor=0.1,
-    status_forcelist=[502, 503, 504, 500, 403, 404, 429]
-)
-adapter = HTTPAdapter(max_retries=retry)
-session.mount('http://', adapter)
-session.mount('https://', adapter)
-apihelper.session = session
-
-API_TOKEN = '6807658453:AAERfsvptE1CZjcGD153Mi3fF2S4PLJd5tM'
+API_TOKEN = os.getenv('API_TOKEN')
 # 频道用户名
-CHANNEL_USERNAME = '@saylove2anyone'
-
+CHANNEL_USERNAME = os.getenv('CHANNEL_USERNAME')
+print(CHANNEL_USERNAME)
 bot = telebot.TeleBot(API_TOKEN)
 # 获取频道信息并输出频道ID
 channel_info = bot.get_chat(CHANNEL_USERNAME)
 
 # 审稿群的chat ID
-REVIEW_GROUP_ID = -1002125735388
+REVIEW_GROUP_ID = int(os.getenv('REVIEW_GROUP_ID'))
 # 公开频道ID
 PUBLISH_CHANNEL_ID = channel_info.id
 
@@ -43,6 +28,13 @@ PUBLISH_CHANNEL_ID = channel_info.id
 submissions = {}
 # 投稿人
 users = {}
+
+# 设置日志记录
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+WEBHOOK_URL = os.getenv('WEBHOOK_URL')  # 你的 Webhook URL
+server = Flask(__name__)
 
 # 预定义的投稿模板
 SUBMISSION_TEMPLATE = """
@@ -191,12 +183,25 @@ def echo_all(message):
 #     bot.reply_to(message, f"Your chat ID is {chat_id}")
 
 
-while True:
-    try:
-        bot.polling(none_stop=True, interval=0, timeout=20)
-    except requests.exceptions.ConnectionError as e:
-        logger.error(f"Connection Error: {e}")
-        time.sleep(15)  # 等待15秒后重试
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        time.sleep(15)  # 等待15秒后重试
+@server.route('/' + API_TOKEN, methods=['POST'])
+def get_message():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return '!', 200
+
+
+@server.route('/')
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL + API_TOKEN)
+    return '!', 200
+
+
+@server.route('/health')
+def health_check():
+    return 'OK', 200
+
+
+if __name__ == "__main__":
+    server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 3001)))
