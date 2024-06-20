@@ -183,7 +183,7 @@ def echo_all(message):
 #     bot.reply_to(message, f"Your chat ID is {chat_id}")
 
 
-@app.route('/' + API_TOKEN, methods=['GET'])
+@app.route('/' + API_TOKEN, methods=['POST'])
 def get_message():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
@@ -195,7 +195,17 @@ def get_message():
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL + API_TOKEN)
-    return '!', 200
+    return 'Webhook set!', 200
+
+
+@app.route('/set_webhook')
+def set_webhook():
+    webhook_url = WEBHOOK_URL + API_TOKEN
+    s = bot.set_webhook(url=webhook_url)
+    if s:
+        return "Webhook setup ok"
+    else:
+        return "Webhook setup failed"
 
 
 @app.route('/health')
@@ -204,4 +214,7 @@ def health_check():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
+    try:
+        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
+    except Exception as e:
+        logger.error(f"Error starting the server: {e}")
