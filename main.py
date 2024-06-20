@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')  # 你的 Webhook URL
-server = Flask(__name__)
+app = Flask(__name__)
 
 # 预定义的投稿模板
 SUBMISSION_TEMPLATE = """
@@ -183,7 +183,7 @@ def echo_all(message):
 #     bot.reply_to(message, f"Your chat ID is {chat_id}")
 
 
-@server.route('/' + API_TOKEN, methods=['POST'])
+@app.route('/' + API_TOKEN, methods=['POST'])
 def get_message():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
@@ -191,17 +191,17 @@ def get_message():
     return '!', 200
 
 
-@server.route('/')
+@app.route('/')
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL + API_TOKEN)
     return '!', 200
 
 
-@server.route('/health')
+@app.route('/health')
 def health_check():
     return 'OK', 200
 
 
 if __name__ == "__main__":
-    server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 3001)))
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
