@@ -183,7 +183,7 @@ def echo_all(message):
 #     bot.reply_to(message, f"Your chat ID is {chat_id}")
 
 
-@app.route('/' + API_TOKEN, methods=['POST'])
+@app.route('/' + API_TOKEN, methods=['GET'])
 def get_message():
     json_string = request.get_data().decode('utf-8')
     update = telebot.types.Update.de_json(json_string)
