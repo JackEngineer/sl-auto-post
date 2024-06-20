@@ -215,6 +215,7 @@ def health_check():
 
 if __name__ == "__main__":
     try:
+        logger.info("Starting Flask server...")
         app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))
     except Exception as e:
         logger.error(f"Error starting the server: {e}")
