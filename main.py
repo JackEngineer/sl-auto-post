@@ -14,7 +14,6 @@ load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
 # 频道用户名
 CHANNEL_USERNAME = os.getenv('CHANNEL_USERNAME')
-print(CHANNEL_USERNAME)
 bot = telebot.TeleBot(API_TOKEN)
 # 获取频道信息并输出频道ID
 channel_info = bot.get_chat(CHANNEL_USERNAME)
