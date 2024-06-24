@@ -148,7 +148,7 @@ def handle_review(call):
             # 在发送到频道的信息下方添加按钮
             markup = types.InlineKeyboardMarkup()
             post_button = types.InlineKeyboardButton("我要投稿", url="https://t.me/wenaitougao_bot")
-            group_button = types.InlineKeyboardButton("我要投稿", url="https://t.me/typel0ve")
+            group_button = types.InlineKeyboardButton("交友聊天", url="https://t.me/typel0ve")
             markup.add(post_button, group_button)
             # 将通过的投稿内容发送到发布群
             bot.send_message(PUBLISH_CHANNEL_ID,
