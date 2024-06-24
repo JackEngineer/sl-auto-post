@@ -75,7 +75,8 @@ WELCOME_TEXT = """
 /submit - 使用这个命令可以开始投稿
 /template - 使用这个命令可以获取投稿模板
 
-Tip：投稿时请按照模板格式来编写稿件
+Tip1：投稿时请按照模板格式来编写稿件
+Tip2: 如果您未设置TG账号的用户名，建议您在联系方式留下其他联系方式，否则对方无法联系上您，这个很重要
 """
 
 
@@ -144,6 +145,11 @@ def handle_review(call):
             status_text = f"✅ **投稿已通过**\n\n审核人: {reviewer_name}\n审核时间: {review_time}"
             bot.answer_callback_query(call.id, status_text)
             # bot.send_message(call.message.chat.id, f"{status_text}")
+            # 在发送到频道的信息下方添加按钮
+            markup = types.InlineKeyboardMarkup()
+            post_button = types.InlineKeyboardButton("我要投稿", url="https://t.me/wenaitougao_bot")
+            group_button = types.InlineKeyboardButton("我要投稿", url="https://t.me/typel0ve")
+            markup.add(post_button, group_button)
             # 将通过的投稿内容发送到发布群
             bot.send_message(PUBLISH_CHANNEL_ID,
                              f"来自{format_username}的投稿:\n\n{submission_text}")
