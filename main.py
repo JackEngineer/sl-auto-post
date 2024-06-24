@@ -152,7 +152,8 @@ def handle_review(call):
             markup.add(post_button, group_button)
             # 将通过的投稿内容发送到发布群
             bot.send_message(PUBLISH_CHANNEL_ID,
-                             f"来自{format_username}的投稿:\n\n{submission_text}")
+                             f"来自{format_username}的投稿:\n\n{submission_text}",
+                             reply_markup=markup)
         elif action == "reject":
             status_text = f"❌ **投稿未通过**\n\n审核人: {reviewer_name}\n审核时间: {review_time}"
             bot.answer_callback_query(call.id, status_text)
